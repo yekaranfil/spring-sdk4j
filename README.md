@@ -1,5 +1,11 @@
 # spring-sdk4j
 ## BU SDK(software development kit) Spring bazlı back-end projeleri için oluşturulmuştur
+## LİSANS 
+```
+Amme Hizmetleri License 2.0 (AHL-2.0)
+```
+Şaka Şaka Hak hukuka gerek yoktur. İstediğiniz gibi kullanabilirsiniz. 
+Tamamen Amme Hizmetidir. Open Source olsun bizim olsun.
 
 ### Kullanım
 - Projeyi indirin
