@@ -35,7 +35,10 @@ public class BackupService {
     private String DATABASE_NAME;
 
     @Value("${backup.serverName}")
-    private String serverName;
+    private String SERVER_NAME;
+
+    @Value("${backup.serverIp}")
+    private String SERVER_IP;
 
     @Value("${backup.directory}")
     private String BACKUP_DIRECTORY;
@@ -48,10 +51,10 @@ public class BackupService {
     // Her gün saat 00:00'da çalıştır
     public void performBackup() {
         try {
-            System.out.println(DATABASE_NAME+", " + serverName + ", " + BACKUP_DIRECTORY + ", " + GROUP_ID + ", " + DATE_FORMAT);
+            System.out.println(DATABASE_NAME+", " + SERVER_NAME + ", " + BACKUP_DIRECTORY + ", " + GROUP_ID + ", " + DATE_FORMAT);
             System.out.println("PostgreSQL yedek alma işlemi başlatıldı.");
             String backupDateTime = DATE_FORMAT.format(new Date());
-            String backupFileName = String.format("wisitcard-tr_%s_%s.sql", DATABASE_NAME, backupDateTime);
+            String backupFileName = String.format(SERVER_NAME+" _%s_%s.sql", DATABASE_NAME, backupDateTime);
             String backupFilePath = BACKUP_DIRECTORY + backupFileName;
 
             // PostgreSQL yedek alma komutu
@@ -113,14 +116,14 @@ public class BackupService {
     private void sendBackupToTelegram(String backupFilePath, String databaseName, String backupDateTime) {
         // Yedek dosyasını Telegram'a gönder
         TelegramBot telegramBot = new TelegramBot();
-        String message = String.format("Yedek alınan sunucu adı: %s\nYedek alınan tarih: %s\nYedek alınan veritabanı: %s", serverName, backupDateTime, databaseName);
+        String message = String.format("Yedek alınan sunucu adı: %s\nYedek alınan tarih: %s\nYedek alınan veritabanı: %s", SERVER_NAME+" - "+ SERVER_IP, backupDateTime, databaseName);
         telegramBot.sendDocument(GROUP_ID, backupFilePath,message);
 
         // Yedek dosyasını sil
 
 
         // Yedek dosyasını başka bir yere taşı
-        String newBackupPath = BACKUP_DIRECTORY + String.format("wisitcard-tr_%s_%s.sql", databaseName, backupDateTime);
+        String newBackupPath = BACKUP_DIRECTORY + String.format(SERVER_NAME+" _%s_%s.sql", databaseName, backupDateTime);
         //replaceOldBackup(newBackupPath);
     }
 }

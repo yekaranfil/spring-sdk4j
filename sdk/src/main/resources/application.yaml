@@ -50,7 +50,8 @@ management:
 
 backup:
   databaseName: "database_name"
-  serverName: "ServerName-TR | ip"
+  serverName: "ServerName-TR"
+  serverIp: "95.214.177.230"
   directory: "src/main/resources/sqlbackups/"
 telegram:
   username: "botUsername"
