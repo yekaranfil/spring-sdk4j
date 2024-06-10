@@ -30,6 +30,8 @@ import java.util.Date;
 @EnableScheduling
 public class BackupService {
 
+    private final SCPUploader SCPUploader;
+
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     @Value("${backup.databaseName}")
     private String DATABASE_NAME;
@@ -37,24 +39,43 @@ public class BackupService {
     @Value("${backup.serverName}")
     private String SERVER_NAME;
 
-    @Value("${backup.serverIp}")
-    private String SERVER_IP;
-
     @Value("${backup.directory}")
     private String BACKUP_DIRECTORY;
 
+    @Value("${backup.serverIp}")
+    private String SERVER_IP;
+
     @Value("${telegram.groupId}")
-    private String GROUP_ID; // Telegram group ID
+    private String GROUP_ID; //// Telegram group ID
+
+    @Value("${backup.host}")//
+    private String SSH_HOST;
+
+    @Value("${backup.port}")//
+    private int SSH_PORT;
+
+    @Value("${backup.username}")//
+    private String SSH_USER;
+
+    @Value("${backup.password}")//
+    private String SSH_PASSWORD;
+
+    @Value("${backup.remotePath}")
+    private String REMOTE_PATH;
+
+    public BackupService(dileksoft.sdk.config.SCPUploader scpUploader) {
+        SCPUploader = scpUploader;
+    }
 
     //@PostConstruct
     @Scheduled(cron = "0 59 20  * * ?") // Her gün gece 00:40'ta çalıştır
     // Her gün saat 00:00'da çalıştır
-    public void performBackup() {
+    public String performBackup() {
         try {
             System.out.println(DATABASE_NAME+", " + SERVER_NAME + ", " + BACKUP_DIRECTORY + ", " + GROUP_ID + ", " + DATE_FORMAT);
             System.out.println("PostgreSQL yedek alma işlemi başlatıldı.");
             String backupDateTime = DATE_FORMAT.format(new Date());
-            String backupFileName = String.format(SERVER_NAME+" _%s_%s.sql", DATABASE_NAME, backupDateTime);
+            String backupFileName = String.format(SERVER_NAME+"_%s_%s.sql", DATABASE_NAME, backupDateTime);
             String backupFilePath = BACKUP_DIRECTORY + backupFileName;
 
             // PostgreSQL yedek alma komutu
@@ -68,62 +89,71 @@ public class BackupService {
 
             if (exitCode == 0) {
                 System.out.println("PostgreSQL yedek alma işlemi tamamlandı.");
-                sendBackupToTelegram(backupFilePath, DATABASE_NAME, backupDateTime);
+                //dosyayı karşı sunucuya upload et
+
+                try {
+                    String backupReturner = SCPUploader.uploadFile(SSH_HOST,SSH_PORT ,SSH_USER, SSH_PASSWORD, backupFilePath, REMOTE_PATH + backupFileName);
+                    if (backupReturner.equals("0")){
+                        sendBackupToTelegram(backupFilePath, backupDateTime, null);
+                    } else if(backupReturner.equals("1")){
+                        sendBackupToTelegram(backupFilePath, backupDateTime, "Dosya sunucuya yüklenirken bir hata oluştu: " + backupReturner);
+                        System.err.println("Dosya sunucuya yüklenirken bir hata oluştu: ");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Dosya sunucuya yüklenirken bir hata oluştu: " + e.getMessage());
+                    // Hata durumunu yönetin
+                }
+                return "PostgreSQL yedek alma işlemi tamamlandı.";
+
             } else {
                 System.err.println("PostgreSQL yedek alma işlemi başarısız oldu. Çıkış kodu: " + exitCode);
+                return "PostgreSQL yedek alma işlemi başarısız oldu. Çıkış kodu: " + exitCode;
+
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+            return "PostgreSQL yedek alma işlemi başarısız oldu. "+ e.getMessage();
         }
     }
 
+    private void sendBackupToTelegram(String backupFilePath, String backupDateTime, String responseMessage) {
+        String date = backupDateTime.split("_")[0];
+        String time = backupDateTime.split("_")[1];
 
-    //TODO BAKILACAK
-    private void replaceOldBackup(String newBackupPath) {
-        // Önceki yedek dosyasını al
-        File directory = new File(BACKUP_DIRECTORY);
-        File[] files = directory.listFiles();
-        if (files != null && files.length > 0) {
-            // En yeni dosya alındıktan sonra diğer dosyaları kaydederken yeni yedeğin üzerine yazılması gerekiyor.
-            File lastModifiedFile = files[0];
-            for (int i = 1; i < files.length; i++) {
-                if (files[i].lastModified() > lastModifiedFile.lastModified()) {
-                    lastModifiedFile = files[i];
-                }
-            }
-
-            // Yeni yedekle yer değiştir
-            try {
-                File newBackupFile = new File(newBackupPath);
-                File oldBackupFile = new File(lastModifiedFile.getAbsolutePath());
-
-                // Yer değiştirme işlemi
-                if (newBackupFile.exists() && newBackupFile.isFile()) {
-                    // Yeni yedeği sil
-                    newBackupFile.delete();
-                }
-
-                // Eski yedekle yeni yeri değiştir
-                if (oldBackupFile.exists() && oldBackupFile.isFile()) {
-                    oldBackupFile.renameTo(newBackupFile);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        String message = String.format(
+                "📁 *Yedek Alınan Sunucu Bilgileri*\n" +
+                        "\\- *Sunucu Adı:* %s\n" +
+                        "\\- *Sunucu IP Adresi:* %s\n\n" +
+                        "📅 *Yedek Alınan Tarih:* %s\n" +
+                        "🕒 *Yedek Alınan Saat:* %s\n\n" +
+                        "💾 *Yedek Alınan Veritabanı:* %s\n\n" +
+                        "📥 *Yedek Dosyası Bilgileri*\n" +
+                        "\\- *Yedek Dosyası Adresi:* %s\n" +
+                        "\\- *Yedek Dosyası Yolu:* %s\n" +
+                        "\\- *Dosya Adı:* %s",
+                escapeMarkdownV2(SERVER_NAME),
+                escapeMarkdownV2(SERVER_IP),
+                escapeMarkdownV2(date),
+                escapeMarkdownV2(time),
+                escapeMarkdownV2(DATABASE_NAME),
+                escapeMarkdownV2(SSH_HOST),
+                escapeMarkdownV2(REMOTE_PATH),
+                escapeMarkdownV2(new File(backupFilePath).getName())
+        );
+        if (responseMessage != null && !responseMessage.isEmpty()) {
+            message = responseMessage;
         }
-    }
 
-    private void sendBackupToTelegram(String backupFilePath, String databaseName, String backupDateTime) {
-        // Yedek dosyasını Telegram'a gönder
+
         TelegramBot telegramBot = new TelegramBot();
-        String message = String.format("Yedek alınan sunucu adı: %s\nYedek alınan tarih: %s\nYedek alınan veritabanı: %s", SERVER_NAME+" - "+ SERVER_IP, backupDateTime, databaseName);
-        telegramBot.sendDocument(GROUP_ID, backupFilePath,message);
+        telegramBot.sendMessage(message);
 
-        // Yedek dosyasını sil
-
-
-        // Yedek dosyasını başka bir yere taşı
-        String newBackupPath = BACKUP_DIRECTORY + String.format(SERVER_NAME+" _%s_%s.sql", databaseName, backupDateTime);
-        //replaceOldBackup(newBackupPath);
+    }
+    private String escapeMarkdownV2(String text) {
+        String[] charsToEscape = {"_", "*", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"};
+        for (String ch : charsToEscape) {
+            text = text.replace(ch, "\\" + ch);
+        }
+        return text;
     }
 }

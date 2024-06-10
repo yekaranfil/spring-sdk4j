@@ -50,7 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(GROUP_ID);
         sendMessage.setText(message);
-
+        sendMessage.setParseMode("MarkdownV2"); // Biçimlendirme modunu ekliyoruz
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {

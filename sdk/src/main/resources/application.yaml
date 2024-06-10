@@ -53,6 +53,11 @@ backup:
   serverName: "ServerName-TR"
   serverIp: "95.214.177.230"
   directory: "src/main/resources/sqlbackups/"
+  host: "remote server adress"
+  port: 22
+  username: "Administrator"
+  password: "yourpass"
+  remotePath: "C:\\Users\\Administrator\\Desktop\\yourpath\\"
 telegram:
   username: "botUsername"
   token: "botToken"
