@@ -68,7 +68,7 @@ public class BackupService {
     }
 
     //@PostConstruct
-    @Scheduled(cron = "0 59 20  * * ?") // Her gün gece 00:40'ta çalıştır
+    @Scheduled(cron = "0 59 20  * * ?") // Her gün gece 23:59'ta çalıştır +3 saat GMT
     // Her gün saat 00:00'da çalıştır
     public String performBackup() {
         try {
