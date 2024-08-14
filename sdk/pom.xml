@@ -74,7 +74,7 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
-			<version>6.1.4</version> <!-- Versiyon uyumlu olmalı -->
+			<version>6.1.8</version> <!-- Versiyon uyumlu olmalı -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
