@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.Serializable;
 
 @RestController
-@RequestMapping("/authentication")
+@RequestMapping("/auth")
 public class TokenController implements Serializable {
 
     private final AuthenticationManager authenticationManager;
@@ -43,9 +43,19 @@ public class TokenController implements Serializable {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
         final String jwt = jwtTokenUtil.generateToken(userDetails);
-        final String authorizedUser = jwtTokenUtil.extractUsername(jwt);
-        final String expirationDate = String.valueOf(jwtTokenUtil.extractExpiration(jwt));
 
-        return ResponseEntity.ok(new AuthenticationResponse(jwt, expirationDate, authorizedUser));
+        // Expiration tarihini milisaniye cinsinden al
+        final long expirationDateMillis = jwtTokenUtil.extractExpirationMillis(jwt); // Expiration'ı milisaniye olarak al
+
+        // AuthenticationResponse oluşturma
+        AuthenticationResponse authResponse = new AuthenticationResponse();
+        AuthenticationResponse.Data data = new AuthenticationResponse.Data();
+        data.setToken(jwt);
+        data.setExpiresAt(expirationDateMillis); // Expiration tarihini milisaniye cinsinden ekle
+        authResponse.setData(data);
+        authResponse.setStatus(200);  // Başarılı durum kodu
+        authResponse.setProperties(null);  // Properties şu an için null
+
+        return ResponseEntity.ok(authResponse);
     }
 }

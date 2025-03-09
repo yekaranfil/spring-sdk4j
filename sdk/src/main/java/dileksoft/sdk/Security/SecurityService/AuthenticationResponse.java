@@ -3,29 +3,57 @@ package dileksoft.sdk.Security.SecurityService;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 
-public class AuthenticationResponse implements Serializable {
-    private final String jwt;
-    private final String expirationDate;
-    private final String AuthorizedUser;
+public class AuthenticationResponse  {
 
+    private Data data;
+    private int status;
+    private Object properties;
 
-    public AuthenticationResponse(String jwt, String expirationDate, String authorizedUser) {
-        this.jwt = jwt;
-        this.expirationDate = expirationDate;
-        AuthorizedUser = authorizedUser;
+    // Getter ve Setter metotları
+    public Data getData() {
+        return data;
     }
 
-    public String getJwt() {
-        return jwt;
-
+    public void setData(Data data) {
+        this.data = data;
     }
 
-    public String getExpirationDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        return expirationDate;
+    public int getStatus() {
+        return status;
     }
 
-    public String getAuthorizedUser() {
-        return AuthorizedUser;
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public Object getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Object properties) {
+        this.properties = properties;
+    }
+
+    // İç içe Data sınıfı
+    public static class Data {
+        private String token;
+        private long expiresAt;
+
+        // Getter ve Setter metotları
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public long getExpiresAt() {
+            return expiresAt;
+        }
+
+        public void setExpiresAt(long expiresAt) {
+            this.expiresAt = expiresAt;
+        }
     }
 }
