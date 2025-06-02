@@ -63,12 +63,37 @@ public class BackupService {
     @Value("${backup.remotePath}")
     private String REMOTE_PATH;
 
-    public BackupService(dileksoft.sdk.config.SCPUploader scpUploader) {
+    public BackupService(SCPUploader scpUploader) {
         SCPUploader = scpUploader;
     }
 
+    private void deleteOldBackups(String remotePath) {
+        try {
+            // Local sqlbackups klasörünü temizle (en yeni dosya hariç)
+            String localBackupPath = BACKUP_DIRECTORY;
+            String[] localCommand = {
+                    "bash",
+                    "-c",
+                    String.format(
+                            "cd %s && ls -t *.sql | tail -n +2 | xargs -r rm --",
+                            localBackupPath
+                    )
+            };
+
+            Process localProcess = Runtime.getRuntime().exec(localCommand);
+            int localExitCode = localProcess.waitFor();
+
+            if (localExitCode == 0) {
+                System.out.println("En yeni dosya dışındaki local yedekler başarıyla silindi.");
+            } else {
+                System.err.println("Local yedekler silinirken hata oluştu. Çıkış kodu: " + localExitCode);
+            }
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Local yedekler silinirken hata oluştu: " + e.getMessage());
+        }
+    }
     //@PostConstruct
-    @Scheduled(cron = "0 59 20  * * ?") // Her gün gece 23:59'ta çalıştır +3 saat GMT
+    @Scheduled(cron = "0 01 00  * * ?") // Her gün gece 00:40'ta çalıştır
     // Her gün saat 00:00'da çalıştır
     public String performBackup() {
         try {
@@ -80,6 +105,7 @@ public class BackupService {
 
             // PostgreSQL yedek alma komutu
             String[] command = {"bash", "-c", "sudo -u postgres pg_dump -U postgres -d " + DATABASE_NAME + " > " + backupFilePath};
+            deleteOldBackups(BACKUP_DIRECTORY);
             Process process = Runtime.getRuntime().exec(command);
 
 
@@ -89,9 +115,12 @@ public class BackupService {
 
             if (exitCode == 0) {
                 System.out.println("PostgreSQL yedek alma işlemi tamamlandı.");
+                sendBackupToTelegram(backupFilePath, backupDateTime,null);
+
                 //dosyayı karşı sunucuya upload et
 
-                try {
+
+              /*  try {
                     String backupReturner = SCPUploader.uploadFile(SSH_HOST,SSH_PORT ,SSH_USER, SSH_PASSWORD, backupFilePath, REMOTE_PATH + backupFileName);
                     if (backupReturner.equals("0")){
                         sendBackupToTelegram(backupFilePath, backupDateTime, null);
@@ -102,7 +131,7 @@ public class BackupService {
                 } catch (Exception e) {
                     System.err.println("Dosya sunucuya yüklenirken bir hata oluştu: " + e.getMessage());
                     // Hata durumunu yönetin
-                }
+                }*/
                 return "PostgreSQL yedek alma işlemi tamamlandı.";
 
             } else {
@@ -143,8 +172,6 @@ public class BackupService {
         if (responseMessage != null && !responseMessage.isEmpty()) {
             message = responseMessage;
         }
-
-
         TelegramBot telegramBot = new TelegramBot();
         telegramBot.sendMessage(message);
 
@@ -156,4 +183,5 @@ public class BackupService {
         }
         return text;
     }
+
 }
