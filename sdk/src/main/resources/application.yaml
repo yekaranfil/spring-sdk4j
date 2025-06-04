@@ -8,7 +8,7 @@ server:
 
 spring.jpa:
   database: POSTGRESQL
-  hibernate.ddl-auto: none
+  hibernate.ddl-auto: validate
   ## oto tablo olusturmasi icin  update, create, create-drop veritabanın şemasına karışmaması için none
   show-sql: true
 
