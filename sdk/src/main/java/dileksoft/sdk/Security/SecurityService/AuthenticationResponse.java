@@ -1,7 +1,8 @@
 package dileksoft.sdk.Security.SecurityService;
 
-public class AuthenticationResponse  {
+import java.util.List;
 
+public class AuthenticationResponse {
     private Data data;
     private int status;
     private Object properties;
@@ -35,6 +36,8 @@ public class AuthenticationResponse  {
     public static class Data {
         private String token;
         private long expiresAt;
+        private String username;
+        private List<String> roles;
 
         // Getter ve Setter metotları
         public String getToken() {
@@ -51,6 +54,22 @@ public class AuthenticationResponse  {
 
         public void setExpiresAt(long expiresAt) {
             this.expiresAt = expiresAt;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public List<String> getRoles() {
+            return roles;
+        }
+
+        public void setRoles(List<String> roles) {
+            this.roles = roles;
         }
     }
 }
