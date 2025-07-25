@@ -25,7 +25,7 @@ public final class CoreQueryUtils {
         if (StringUtils.hasText(entityGraphName)) {
             try {
                 EntityGraph<?> entityGraph = entityManager.getEntityGraph(entityGraphName);
-                query.setHint("javax.persistence.fetchgraph", entityGraph);
+                query.setHint("jakarta.persistence.fetchgraph", entityGraph);
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException("EntityGraph not found with name: " + entityGraphName, e);
             }
@@ -36,7 +36,7 @@ public final class CoreQueryUtils {
         if (StringUtils.hasText(entityGraphName)) {
             try {
                 EntityGraph<?> entityGraph = entityManager.getEntityGraph(entityGraphName);
-                query.setHint("javax.persistence.fetchgraph", entityGraph);
+                query.setHint("jakarta.persistence.fetchgraph", entityGraph);
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException("Tanımlı olmayan EntityGraph: " + entityGraphName, e);
             }
