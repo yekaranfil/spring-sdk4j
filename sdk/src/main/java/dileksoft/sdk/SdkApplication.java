@@ -16,7 +16,7 @@
 
 package dileksoft.sdk;
 
-import core.repository.CoreRepositoryFactoryBean;
+import com.dileksoft.data.repository.CoreRepositoryFactoryBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
