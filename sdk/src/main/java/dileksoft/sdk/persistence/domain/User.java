@@ -1,5 +1,6 @@
 package dileksoft.sdk.persistence.domain;
 
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +15,7 @@ import java.time.OffsetDateTime;
 public class User {
 
     @Id
-    @GenericGenerator(name = "seq_channels_id", strategy = "dileksoft.sdk.persistence.FastTSIDGenerator")
-    @GeneratedValue(generator = "seq_channels_id")
+    @Tsid
     @Column(name = "user_id")
     String userId;
 

@@ -1,5 +1,6 @@
 package dileksoft.sdk.persistence.domain;
 
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +15,7 @@ import java.time.OffsetDateTime;
 public class UserRoleRelation {
 
     @Id
-    @GenericGenerator(name = "seq_user_roles_id", strategy = "dileksoft.piticaret.persistence.FastTSIDGenerator")
-    @GeneratedValue(generator = "seq_user_roles_id")
+    @Tsid
     @Column(name = "user_role_id")
     String userRoleId;  // Kullanıcı rolü benzersiz kimlik numarası (TSID)
 

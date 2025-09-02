@@ -1,5 +1,6 @@
 package dileksoft.sdk.persistence.domain;
 
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,8 +16,7 @@ public class Role {
 
 
     @Id
-    @GenericGenerator(name = "seq_roles_id", strategy = "dileksoft.sdk.persistence.FastTSIDGenerator")
-    @GeneratedValue(generator = "seq_roles_id")
+    @Tsid
     @Column(name = "role_id")
     private String roleId;
 
